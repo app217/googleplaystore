@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Play</title>
+<style>
+:root{--bg:#fff;--fg:#1f1f1f;--sub:#5f6368;--line:#dadce0;--chip:#e6f4ee;--chipfg:#0b6b4d;--brand:#6a3df0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#131314;--fg:#e8eaed;--sub:#9aa0a6;--line:#3c4043;--chip:#1f3a31;--chipfg:#8fd9b8}}
+:root[data-theme="dark"]{--bg:#131314;--fg:#e8eaed;--sub:#9aa0a6;--line:#3c4043;--chip:#1f3a31;--chipfg:#8fd9b8}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:"Roboto","Segoe UI",Arial,sans-serif}
+.app{max-width:420px;margin:0 auto;min-height:100vh;padding-bottom:76px}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);display:flex;align-items:center;gap:14px;padding:12px 16px;z-index:5;box-shadow:0 1px 4px #0002}
+.logo{display:flex;align-items:center;gap:8px;flex:1;font-size:22px;font-weight:500;color:var(--sub)}
+header svg.ic{width:24px;height:24px;fill:none;stroke:var(--fg);stroke-width:2;stroke-linecap:round}
+.av{width:32px;height:32px;border-radius:50%;background:#5b8c2a;color:#fff;display:grid;place-items:center;font-weight:500}
+.slider{margin:12px 16px 0;height:244px;border-radius:16px;overflow:hidden;position:relative;background:#ddd;touch-action:pan-y}
+.track{display:flex;height:100%;transition:transform .5s ease}
+.slide{min-width:100%;height:100%;position:relative;color:#fff;cursor:pointer}
+.slide>img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.slide::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 35%,#000a)}
+.slide h2{position:absolute;left:16px;right:16px;bottom:66px;margin:0;font-size:20px;font-weight:500;line-height:1.25;z-index:1}
+.slide .row{position:absolute;left:16px;right:16px;bottom:12px;display:flex;align-items:center;gap:12px;z-index:1}
+.slide .nm{flex:1;font-size:14px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.buy{background:#fffffff0;border:0;border-radius:8px;padding:8px 14px;font-size:14px;font-weight:500;color:#1f1f1f;cursor:pointer}
+.dots{position:absolute;top:10px;right:12px;display:flex;gap:6px;z-index:2}
+.dots i{width:7px;height:7px;border-radius:50%;background:#fff8;cursor:pointer}.dots i.on{background:#fff}
+.appic{width:44px;height:44px;border-radius:12px;flex:none;overflow:hidden;display:grid;place-items:center;font-size:24px}
+.appic img{width:100%;height:100%;object-fit:cover;display:block}
+.appic.fail{background:var(--line)}
+.appic.fail::after{content:attr(data-n);font-size:20px;font-weight:500;color:var(--sub)}
+.slide.fail{background:linear-gradient(135deg,#7e57c2,#26a69a)}
+h3{font-size:20px;font-weight:500;margin:28px 16px 14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 16px 8px}
+.chip{border:1px solid var(--line);background:none;color:var(--fg);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:500;cursor:pointer}
+.chip.on{background:var(--chip);color:var(--chipfg);border-color:transparent}
+.item{display:flex;align-items:center;gap:16px;padding:12px 16px;cursor:pointer}
+.item .rk{width:14px;font-size:14px;color:var(--sub);text-align:center}
+.item .appic{width:56px;height:56px;border-radius:14px}
+.item b{font-weight:500;font-size:15px;display:block}
+.item small{display:block;color:var(--sub);font-size:13px;margin-top:2px}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--bg);border-top:1px solid var(--line);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));z-index:6}
+nav button{flex:1;background:none;border:0;color:var(--sub);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0}
+nav button svg{width:26px;height:26px;display:block}
+nav button.on{color:#0b6b4d;font-weight:500}
+@media (prefers-color-scheme:dark){nav button.on{color:#8fd9b8}}
+.sbar{display:none;position:absolute;inset:0;background:var(--bg);align-items:center;gap:6px;padding:0 10px;z-index:3}
+body.searching .sbar{display:flex}
+.sbar input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--fg);font-size:17px;font-family:inherit}
+.sbar button{background:none;border:0;color:var(--fg);font-size:24px;cursor:pointer;padding:6px 10px;line-height:1}
+#res{display:none}
+body.searching #res{display:block}
+body.searching .slider,body.searching #th,body.searching #chips,body.searching #list{display:none}
+.nores{margin:24px 16px;color:var(--sub);font-size:15px}
+.av,header svg.ic{cursor:pointer}
+.ov{position:fixed;inset:0;background:#0007;z-index:20;display:none}
+.ov.open{display:block}
+.menu{position:fixed;top:60px;right:max(8px,calc(50vw - 202px));width:min(320px,calc(100vw - 16px));max-height:calc(100vh - 76px);overflow:auto;background:var(--bg);border-radius:16px;box-shadow:0 4px 24px #0005;z-index:30;display:none;padding-bottom:8px}
+.menu.open{display:block}
+.menu hr{border:0;border-top:1px solid var(--line);margin:8px 0}
+.mh{display:flex;align-items:center;gap:14px;padding:16px;cursor:pointer}
+.av2{width:40px;height:40px;border-radius:50%;background:#5b8c2a;color:#fff;display:grid;place-items:center;font-weight:500;flex:none}
+.mh b{display:block;font-size:14px;font-weight:500}.mh small{color:var(--sub);font-size:12px}
+.mg{display:block;margin:0 16px 12px 70px;background:none;border:1px solid var(--line);color:var(--fg);border-radius:999px;padding:9px 16px;font-size:14px;cursor:pointer}
+.mr{display:flex;align-items:center;gap:20px;padding:12px 16px;font-size:14px;cursor:pointer}
+.mr:hover{background:var(--chip)}
+.mr svg{width:22px;height:22px;fill:none;stroke:var(--sub);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.mf{text-align:center;color:var(--sub);font-size:12px;padding:10px}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(380px,calc(100vw - 24px));max-height:calc(100vh - 32px);overflow:auto;background:var(--bg);color:var(--fg);border-radius:20px;z-index:31;display:none;box-shadow:0 8px 32px #0006}
+.modal.open{display:block}
+.hh{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;font-size:18px}
+.hh button{background:none;border:0;color:var(--fg);font-size:20px;cursor:pointer}
+.hb{text-align:center;padding:24px 16px;background:linear-gradient(#e9dcff,#c9e4ff);color:#1f1f1f}
+.hi{width:64px;height:64px;border-radius:50%;background:#fff;color:#6a3df0;font-size:34px;font-weight:700;display:grid;place-items:center;margin:0 auto 12px}
+.hb h2{font-weight:400;font-size:28px;margin:0 0 18px}
+.ask{display:flex;background:#fffc;border-radius:999px;padding:4px 6px 4px 18px}
+.ask input{flex:1;min-width:0;border:0;outline:0;background:none;font-size:15px;color:#1f1f1f}
+.ask button{background:none;border:0;color:#5f6368;font-size:18px;cursor:pointer}
+.hc{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:16px}
+.hc button{background:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:14px;color:#1f1f1f;cursor:pointer}
+#ha{font-size:14px;margin:14px 0 0}
+.hr{padding:16px}.hl{padding:12px 4px;font-size:15px;cursor:pointer}
+.sm{padding:20px}.sm h4{margin:0 0 14px;font-size:18px;font-weight:500}
+.sm label{display:block;font-size:13px;color:var(--sub);margin-bottom:12px}
+.sm input{display:block;width:100%;margin-top:4px;padding:11px 12px;border:1px solid var(--line);border-radius:8px;background:none;color:var(--fg);font-size:15px}
+.err{color:#d93025;font-size:13px;min-height:16px;margin:0 0 8px}
+.fb{display:flex;justify-content:flex-end;gap:8px}
+.fb button{background:none;border:0;color:var(--brand);font-size:14px;font-weight:500;padding:9px 16px;border-radius:999px;cursor:pointer}
+.fb .pri{background:var(--brand);color:#fff}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#323232;color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
+.toast.show{opacity:1}
+button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="logo">
+    <img height="34px" width="34px" src="Google_Play_2016_icon.svg">
+    Google Play
+  </div>
+  <svg class="ic" id="sbtn" style="cursor:pointer" viewBox="0 0 24 24" aria-label="Search"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+  <svg class="ic" viewBox="0 0 24 24" aria-label="Help"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.3M12 17v.1"/></svg>
+  <div class="av">R</div>
+  <div class="sbar"><button id="sback" aria-label="Back">&#8592;</button><input id="q" type="search" placeholder="Search apps &amp; games" autocomplete="off"></div>
+</header>
+<section class="slider" id="slider"></section>
+<h3 id="th">Top charts</h3>
+<div class="chips" id="chips"></div>
+<div id="list"></div>
+<div id="res"></div>
+</div>
+<nav id="nav"></nav>
+
+<script>
+
+const ico=(e,a,b)=>"data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient></defs><rect width='64' height='64' fill='url(#g)'/><text x='32' y='44' font-size='34' text-anchor='middle'>${e}</text></svg>`);
+const ban=(e,a,b)=>"data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 244' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient></defs><rect width='400' height='244' fill='url(#g)'/><text x='290' y='120' font-size='110' text-anchor='middle'>${e}</text></svg>`);
+const rot=(a,n)=>a.slice(n).concat(a.slice(0,n));
+const G=[{name:"Nec Money",cat:"Nec Money Transfer Limited",rating:"4.4",icon:"https://play-lh.googleusercontent.com/hRibb9TT9FFaMYVHnH-IPoCMji05UDlgRTml5M3PEdAUq23K6oXAoNOzLoyz2rlO4vrrpqz19kEgCb__ect1=w240-h480-rw",link:"https://play.google.com/store/apps/details?id=com.necmoney.necmoneyapp"},
+{name:"Ludo Star",cat:"Board",rating:"4.1",icon:"https://play-lh.googleusercontent.com/qSN0Eb6mDVPIX4PRggTB3PsEU1oyPorteUfiuJ709P9cZxdWP9Y-kV0htG7rtJNYywGE-3wlrC_7Gix0h0-Urw=s48-rw",link:"https://play.google.com/store/apps/details?id=com.ludo.king"},
+{name:"Sky Racer 3D",cat:"Racing",rating:"4.3",icon:"https://play-lh.googleusercontent.com/LkU3rAh0OL-iUqZcmdnBjdcQCo2SLogoNc2MVkfhovrQEFPyXN5mJj_QM8u4tHV27H8wItBYxznR2qEHQRQd0w=s48-rw",link:"https://play.google.com/store/apps/details?id=com.rsg.sky.race"},
+{name:"Tower Siege",cat:"Strategy",rating:"4.4",icon:"https://play-lh.googleusercontent.com/9saVtWI-4KVfGEt8-0cQqvJmK9x-RYKD7GB5ZCMs7_EGBa4Oy76QytF_NecxVZOp1CYmuyC08gIgCx2biQcQJQ=w240-h480-rw",link:"https://play.google.com/store/apps/details?id=com.AppleJuiceGames.TowerSiegeCastleDefenseTD"},
+{name:"Word Garden",cat:"Puzzle",rating:"4.6",icon:"https://play-lh.googleusercontent.com/BIGBUeF94Joi_D5EqAzCIkkMCSKJAqhjPliMk4g_BfIKN63h4ic_kW5QjPkeJKPQWfD85QB9gcujk0Rx_v8zXA=s48-rw",link:"https://play.google.com/store/apps/details?id=com.iscoolentertainment.snc"},
+{name:"Cricket Blitz",cat:"Sports",rating:"4.2",icon:"https://play-lh.googleusercontent.com/iaja-4cJo3hQd2s-c2bGcQG1F0ISAbGLwiq_OgBm16cKz4kildDxppyJidOYkmDMzIEPAAVdjJSR6LtEmNnp3aw=w240-h480-rw",link:"https://play.google.com/store/apps/details?id=com.iap2azk.lapugra.cgswap"},
+{name:"Real Bike Racing",cat:"Sports",rating:"4.2",icon:"https://play-lh.googleusercontent.com/NbXi1-NNl0lvAuGHQ7ZEZrpzTmrYHV6upRBKlDd7akM8mbmNO_oi6w3fN5CrD56iVORG7ogPFgRKOwzKPqdV=s48-rw",link:"https://play.google.com/store/apps/details?id=com.wordsmobile.RealBikeRacing"},
+{name:"Bus Simulator - Bus Games 3D",cat:"Sports",rating:"4.2",icon:"https://play-lh.googleusercontent.com/l_w56kj9D5f7LJtAxkoLykR_j8vTWzZVWwm4ObPlEHJ90nXZSUVYfcmsvKQV3CGh_tQRtQNCq-nXQs1XXptN=w240-h480-rw",link:"https://play.google.com/store/apps/details?id=com.jimaapps.city.coach.bus.simulator.driving"},
+{name:"Clash of Clans",cat:"Sports",rating:"4.5",icon:"https://play-lh.googleusercontent.com/gX_sXesdzLc9C4tancLSiJKZom_gLi7Uc5cMfaC-zaY0gvFbXV_DTRZFNqlVx6USMWkqglYgr-k0NeaUq5zE=s48-rw",link:"https://play.google.com/store/apps/details?id=com.supercell.clashofclans"},
+{name:"Epic Seven",cat:"Smilegate, Inc.",rating:"4.1",icon:"https://play-lh.googleusercontent.com/r3Q3Q8qy8C2SoUUF59o8NMHyE3lTGh3TuUw4XsJVCs5L1tpkRPWp__TKYth0oqr5enygDUi3LrHq1030Rifw5w=s48-rw",link:"https://play.google.com/store/apps/details?id=com.stove.epic7.google"},
+{name:"Jurassic World™: The Game ",cat:"Ludia Games Inc.",rating:"4.5",icon:"https://play-lh.googleusercontent.com/obiQeqlWHyppvZ26pl26hPcGHBoClvXrX_UlSwY_GARaEh_YgWbpcyOqGQ_mi_5YIh4ILPyzUYc9AjEk1NX6Cg=s48-rw",link:"https://play.google.com/store/apps/details?id=com.ludia.jurassicworld"},
+{name:"ODIN:VALHALLA RISING",cat:"Kakao Games Corp.",rating:"3.6",icon:"https://play-lh.googleusercontent.com/h5wPvgrgG9YCC7XCIHtGVjBCl8JTKS9gTm9qOr3aKjjGGSV3pRqQMgSV2MsqhZS2eIfXPvnVnOSmaow6L4pmBg=s48-rw",link:"https://play.google.com/store/apps/details?id=com.kakaogames.gbod"},];
+
+
+const A=[{name:"TikTok Lite - Save Data & Fast",cat:"Communication",rating:"4.5",icon:"https://play-lh.googleusercontent.com/VzOY6e791-2sDliP7fhg_90thu1Bq-l_cqssRKcK6Ba6a1hakG9DnnvWYjqz_D5kh1_nPqk_QExBOW4y50zh89Y=w240-h480-rw",link:"https://play.google.com/store/apps/details?id=com.zhiliaoapp.musically.go"},
+{name:"YouTube",cat:"Google LLC",rating:"4.4",icon:"https://play-lh.googleusercontent.com/QNmuZQc9I6Zbe3mWnSr0hycnENqGFCI5p3yE29Hkxtf22T0IWS6zTrpxULLyyjWpB7ONAXDsDQXnXcVWokl3eg=s48-rw",link:"https://play.google.com/store/apps/details?id=com.google.android.youtube"},
+{name:"Pay Wallet",cat:"Finance",rating:"4.2",icon:ico("👛","#5c6bc0","#283593"),link:""},
+{name:"Daily Planner",cat:"Productivity",rating:"4.6",icon:ico("🗓️","#8c6cf5","#512da8"),link:""},
+{name:"Quick Notes",cat:"Productivity",rating:"4.3",icon:ico("📝","#ffd54f","#f9a825"),link:""}];
+
+
+
+const K=[{name:"ABC Fun",cat:"Education",rating:"4.7",icon:ico("🔤","#ef5350","#c62828"),link:""},
+{name:"Color Splash",cat:"Creativity",rating:"4.5",icon:ico("🎨","#ba68c8","#7b1fa2"),link:""},
+{name:"Animal Sounds",cat:"Music",rating:"4.6",icon:ico("🐘","#4db6ac","#00796b"),link:""},
+{name:"Count & Play",cat:"Education",rating:"4.4",icon:ico("🔢","#64b5f6","#1976d2"),link:""},
+{name:"Story Time",cat:"Books",rating:"4.6",icon:ico("📖","#ffb74d","#f57c00"),link:""}];
+const STORE={
+ games:{slides:[
+  {img:ban("🐸","#f4ec8a","#9ccc65"),title:"Guide the hero home, one note at a time",name:"Note Walk",icon:ico("🐸","#9ccc65","#558b2f"),btn:"BDT 1,000.00 Buy",link:""},
+  {img:ban("🏎️","#64b5f6","#1a237e"),title:"Race the world in 3D",name:"Sky Racer 3D",icon:G[1].icon,btn:"Install",link:""},
+  {img:ban("🏰","#ce93d8","#4a148c"),title:"Defend your kingdom",name:"Tower Siege",icon:G[2].icon,btn:"Install",link:""}],
+  free:G,grossing:rot(G,2),paid:rot(G,3)},
+ apps:{slides:[
+  {img:ban("🗓️","#b39ddb","#4527a0"),title:"Plan your day in one place",name:"Daily Planner",icon:A[3].icon,btn:"Install",link:""},
+  {img:ban("💬","#80deea","#006064"),title:"Chat without limits",name:"Chat Lite",icon:A[0].icon,btn:"Install",link:""}],
+  free:A,grossing:rot(A,2),paid:rot(A,3)},
+ kids:{slides:[
+  {img:ban("🧸","#ffcc80","#e65100"),title:"Learn letters and numbers by playing",name:"Little Learners",icon:ico("🧸","#ff8a65","#d84315"),btn:"Install",link:""},
+  {img:ban("🎨","#f48fb1","#880e4f"),title:"Colour your imagination",name:"Color Splash",icon:K[1].icon,btn:"Install",link:""}],
+  free:K,grossing:rot(K,2),paid:rot(K,3)}
+};
+const SLIDE_MS=4000; // auto change somoy (millisecond)
+/* ================= /CONFIG ================= */
+
+const TABS=[["games","Games"],["apps","Apps"],["kids","Children"]];
+const CH=[["free","Top free"],["grossing","Top grossing"],["paid","Top paid"]];
+function ic(k,on){
+ const f=on?"currentColor":"none";
+ const a=`viewBox="0 0 24 24" fill="${f}" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"`;
+ if(k==="games")return `<svg viewBox="0 0 24 24" fill="${f}" stroke="${on?"none":"currentColor"}" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path fill-rule="evenodd" d="M21.58 16.09l-1.09-7.66C20.21 6.46 18.52 5 16.53 5H7.47C5.48 5 3.79 6.46 3.51 8.43l-1.09 7.66C2.2 17.63 3.39 19 4.94 19c.68 0 1.32-.27 1.8-.75L9 16h6l2.25 2.25c.48.48 1.13.75 1.8.75 1.56 0 2.75-1.37 2.53-2.91zM11 11H9v2H8v-2H6v-1h2V8h1v2h2v1zm4-1c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2 3c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>`;
+ if(k==="apps")return `<svg ${a}><rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/></svg>`;
+ return `<svg ${a}><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9-4.3-4.1 5.9-.8z"/></svg>`;
+}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const img=(u,cls="")=>`<img class="${cls}" src="${esc(u)}" alt="" onerror="this.parentNode.classList.add('fail');this.remove()">`;
+const go=u=>{if(u)window.open(u,"_blank","noopener")};
+let tab="games",ch="free",idx=0,timer;
+
+function renderSlider(){
+ const s=STORE[tab].slides;
+ document.getElementById("slider").innerHTML=`<div class="track" id="track">${s.map((x,i)=>`<div class="slide" data-s="${i}">${img(x.img,"bg")}<h2>${esc(x.title)}</h2><div class="row"><div class="appic" data-n="${esc(x.name[0])}">${img(x.icon)}</div><div class="nm">${esc(x.name)}</div><button class="buy">${esc(x.btn)}</button></div></div>`).join("")}</div><div class="dots">${s.map((_,i)=>`<i data-d="${i}"></i>`).join("")}</div>`;
+ show(0);restart();
+}
+function show(i){
+ const n=STORE[tab].slides.length;idx=(i+n)%n;
+ document.getElementById("track").style.transform=`translateX(-${idx*100}%)`;
+ document.querySelectorAll(".dots i").forEach((d,j)=>d.classList.toggle("on",j===idx));
+}
+function restart(){clearInterval(timer);if(STORE[tab].slides.length>1)timer=setInterval(()=>show(idx+1),SLIDE_MS)}
+function render(){
+ renderSlider();
+ document.getElementById("chips").innerHTML=CH.map(([k,l])=>`<button class="chip ${k===ch?"on":""}" data-c="${k}">${l}</button>`).join("");
+ renderList();renderNav();
+}
+function renderList(){
+ document.getElementById("list").innerHTML=STORE[tab][ch].map((a,i)=>`<div class="item" data-a="${i}"><span class="rk">${i+1}</span><div class="appic" data-n="${esc(a.name[0])}">${img(a.icon)}</div><div><b>${esc(a.name)}</b><small>${esc(a.cat)}</small><small>${esc(a.rating)} ★</small></div></div>`).join("");
+}
+function renderNav(){
+ document.getElementById("nav").innerHTML=TABS.map(([k,l])=>`<button class="${k===tab?"on":""}" data-t="${k}">${ic(k,k===tab)}${l}</button>`).join("");
+}
+document.addEventListener("click",e=>{
+ const c=e.target.closest("[data-c]"),t=e.target.closest("[data-t]"),d=e.target.closest("[data-d]"),s=e.target.closest("[data-s]"),a=e.target.closest("[data-a]");
+ if(c){ch=c.dataset.c;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x===c));renderList()}
+ else if(t){tab=t.dataset.t;ch="free";render();window.scrollTo(0,0)}
+ else if(d){show(+d.dataset.d);restart()}
+ else if(s){go(STORE[tab].slides[+s.dataset.s].link)}
+ else if(a){go(STORE[tab][ch][+a.dataset.a].link)}
+ else{const rr=e.target.closest("[data-r]");if(rr)go(hits[+rr.dataset.r].link)}
+});
+let x0=null;const sl=document.getElementById("slider");
+sl.addEventListener("touchstart",e=>{x0=e.touches[0].clientX;clearInterval(timer)},{passive:true});
+sl.addEventListener("touchend",e=>{if(x0!==null){const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>40)show(idx+(dx<0?1:-1));x0=null}restart()});
+sl.addEventListener("mouseenter",()=>clearInterval(timer));sl.addEventListener("mouseleave",restart);
+
+/* ===== SEARCH ===== */
+let hits=[];
+const q=document.getElementById("q"),res=document.getElementById("res");
+function allApps(){const m=new Map();Object.values(STORE).forEach(t=>["free","grossing","paid"].forEach(k=>t[k].forEach(a=>{if(!m.has(a.name))m.set(a.name,a)})));return [...m.values()]}
+function search(v){
+ v=v.trim().toLowerCase();
+ if(!v){hits=[];res.innerHTML='<p class="nores">Type an app or game name</p>';return}
+ hits=allApps().filter(a=>a.name.toLowerCase().includes(v)||String(a.cat).toLowerCase().includes(v))
+  .sort((a,b)=>(b.name.toLowerCase().startsWith(v)?1:0)-(a.name.toLowerCase().startsWith(v)?1:0));
+ res.innerHTML=hits.length?hits.map((a,i)=>`<div class="item" data-r="${i}"><div class="appic" data-n="${esc(a.name[0])}">${img(a.icon)}</div><div><b>${esc(a.name)}</b><small>${esc(a.cat)}</small><small>${esc(a.rating)} ★</small></div></div>`).join(""):`<p class="nores">No results for "${esc(v)}"</p>`;
+}
+function openS(){document.body.classList.add("searching");clearInterval(timer);q.value="";search("");q.focus()}
+function closeS(){document.body.classList.remove("searching");q.value="";restart()}
+document.getElementById("sbtn").addEventListener("click",openS);
+document.getElementById("sback").addEventListener("click",closeS);
+q.addEventListener("input",()=>search(q.value));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeS()});
+
+/* ===== ACCOUNT MENU + HELP ===== */
+(()=>{
+const $=s=>document.querySelector(s),ST={name:"Guest",email:""};
+try{Object.assign(ST,JSON.parse(localStorage.getItem("myplay_acc")||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem("myplay_acc",JSON.stringify(ST))}catch(e){}};
+const av=$("header .av"),hb=$('header svg[aria-label="Help"]');
+const L=()=>(ST.name||"G")[0].toUpperCase(),paint=()=>{av.textContent=L()};
+const mk=c=>{const d=document.createElement("div");d.className=c;document.body.appendChild(d);return d};
+const ov=mk("ov"),menu=mk("menu"),help=mk("modal"),form=mk("modal sm"),toast=mk("toast");
+const ROWS=[["lib","Library &amp; devices","M4 4h16v16H4zM9 4v16M15 4v16M4 9h16M4 15h16"],["pay","Payments and subscriptions","M3 6h18v12H3zM3 10h18"],["act","My Play activity","M4 4h16v12H9l-5 4z"],["off","Offers","M3 9h18v4H3zM5 13v7h14v-7M12 9v11M12 9c-2-4-6-3-4 0M12 9c2-4 6-3 4 0"],["pass","Pass","M7 3h10v18l-5-3-5 3z"],["fam","Family","M3 11l9-7 9 7v9H3z"],["per","Personalisation","M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"],["set","Settings","M12 9a3 3 0 100 6 3 3 0 000-6zM12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"],["switch","Add / switch account","M4 6h12M12 2l4 4-4 4M20 18H8M12 14l-4 4 4 4"],["out","Sign out","M10 4H4v16h6M14 8l4 4-4 4M18 12H9"]];
+const row=([k,t,p])=>`<div class="mr" data-m="${k}"><svg viewBox="0 0 24 24"><path d="${p}"/></svg>${t}</div>`;
+const say=m=>{toast.textContent=m;toast.classList.add("show");setTimeout(()=>toast.classList.remove("show"),2200)};
+const closeAll=()=>[ov,menu,help,form].forEach(x=>x.classList.remove("open"));
+function openMenu(){
+ menu.innerHTML=`<div class="mh" data-m="prof"><div class="av2">${L()}</div><div><b>${esc(ST.name)}</b><small>${esc(ST.email||"Tap to add your Gmail")}</small></div></div><button class="mg" data-m="prof">Manage your account</button><hr>${ROWS.slice(0,6).map(row).join("")}<hr>${ROWS.slice(6,8).map(row).join("")}<hr>${ROWS.slice(8).map(row).join("")}<hr><div class="mf">Privacy Policy \u2022 Terms of Service</div>`;
+ menu.classList.add("open");
+}
+function openForm(t){
+ closeAll();
+ form.innerHTML=`<h4>${t}</h4><label>Name<input id="fn" value="${esc(ST.name==="Guest"?"":ST.name)}" placeholder="Your name"></label><label>Gmail<input id="fe" type="email" value="${esc(ST.email)}" placeholder="you@gmail.com"></label><p class="err" id="fr"></p><div class="fb"><button data-f="x">Cancel</button><button class="pri" data-f="s">Save</button></div>`;
+ form.classList.add("open");ov.classList.add("open");$("#fn").focus();
+}
+function openHelp(){
+ closeAll();
+ help.innerHTML=`<div class="hh"><b>Help</b><button data-h="x" aria-label="Close">\u2715</button></div><div class="hb"><div class="hi">?</div><h2>How can we help?</h2><div class="ask"><input id="hq" placeholder="Ask a question"><button data-h="s" aria-label="Send">\u27a4</button></div><div class="hc">${["Request a refund","Resolve a payment issue","Wrong country or currency","Can't find an app","Join rewards"].map(x=>`<button data-h="c">${x}</button>`).join("")}</div><p id="ha"></p></div><div class="hr"><b>Popular help resources</b>${["Cancel, pause or change a subscription","Get a refund for an app or game","Fix problems with downloads"].map(x=>`<div class="hl" data-h="r">${x}</div>`).join("")}</div>`;
+ help.classList.add("open");ov.classList.add("open");
+ $("#hq").onkeydown=e=>{if(e.key==="Enter")ask()};
+}
+function ask(){
+ const v=$("#hq").value.trim();if(!v)return;
+ $("#ha").textContent=`Thanks! We got your question: "${v}". `+(ST.email?`We'll reply to ${ST.email}.`:"Add your Gmail from the account menu so we can reply.");
+}
+menu.onclick=e=>{
+ const m=e.target.closest("[data-m]");if(!m)return;const k=m.dataset.m;
+ if(k==="prof"||k==="switch")openForm(k==="switch"?"Add account":"Your account");
+ else if(k==="out"){ST.name="Guest";ST.email="";save();paint();closeAll();say("Signed out")}
+ else{closeAll();say(m.textContent.trim()+" \u2014 coming soon")}
+};
+form.onclick=e=>{
+ const b=e.target.closest("[data-f]");if(!b)return;
+ if(b.dataset.f==="x")return closeAll();
+ const em=$("#fe").value.trim(),nm=$("#fn").value.trim();
+ if(!em.includes("@")||!em.includes(".")){$("#fr").textContent="Enter a valid Gmail address";return}
+ ST.email=em;ST.name=nm||em.split("@")[0];save();paint();closeAll();say("Account added");
+};
+help.onclick=e=>{
+ const b=e.target.closest("[data-h]");if(!b)return;const k=b.dataset.h;
+ if(k==="x")closeAll();
+ else if(k==="c"){$("#hq").value=b.textContent;ask()}
+ else if(k==="s")ask();
+ else say(b.textContent+" \u2014 coming soon");
+};
+av.onclick=e=>{e.stopPropagation();menu.classList.contains("open")?closeAll():openMenu()};
+hb.onclick=openHelp;ov.onclick=closeAll;
+document.addEventListener("click",e=>{if(!menu.contains(e.target)&&e.target!==av)menu.classList.remove("open")});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll()});
+paint();
+})();
+render();
+</script>
+</body>
+</html>
